@@ -12,3 +12,4 @@
 #!.yarn/cache
 .pnp.*
 dist/
+Turbin3-wallet.json
