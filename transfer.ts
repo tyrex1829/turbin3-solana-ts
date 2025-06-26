@@ -17,16 +17,54 @@ const connection = new Connection("https://api.devnet.solana.com");
 
 (async () => {
   try {
+    const balance = await connection.getBalance(from.publicKey);
+
+    if (balance === 0) {
+      console.log("Wallet is already empty.");
+      return;
+    }
+
+    const testTransaction = new Transaction().add(
+      SystemProgram.transfer({
+        fromPubkey: from.publicKey,
+        toPubkey: to,
+        lamports: balance,
+      })
+    );
+
+    testTransaction.recentBlockhash = (
+      await connection.getLatestBlockhash("confirmed")
+    ).blockhash;
+
+    testTransaction.feePayer = from.publicKey;
+
+    const fee =
+      (
+        await connection.getFeeForMessage(
+          testTransaction.compileMessage(),
+          "confirmed"
+        )
+      ).value || 0;
+
+    testTransaction.instructions.pop();
+
+    if (balance - fee <= 0) {
+      console.log("❌ Not enough balance to cover fee.");
+      return;
+    }
+
     const transaction = new Transaction().add(
       SystemProgram.transfer({
         fromPubkey: from.publicKey,
         toPubkey: to,
-        lamports: LAMPORTS_PER_SOL / 100,
+        lamports: balance - fee,
       })
     );
+
     transaction.recentBlockhash = (
       await connection.getLatestBlockhash("confirmed")
     ).blockhash;
+
     transaction.feePayer = from.publicKey;
 
     const signature = await sendAndConfirmTransaction(connection, transaction, [
