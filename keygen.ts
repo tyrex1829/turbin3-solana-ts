@@ -1,8 +1,6 @@
 import { Keypair } from "@solana/web3.js";
-import bs58 from "bs58";
-import * as prompt from "prompt-sync";
-
-const ask = prompt();
+const bs58 = require("bs58").default;
+const prompt = require("prompt-sync")();
 
 let kp = Keypair.generate();
 
@@ -18,7 +16,7 @@ function walletToBase58(secretArray: number[]) {
 }
 
 function base58ToWallet() {
-  const base58Input = ask("\n🔁 Enter a base58 private key to decode: ");
+  const base58Input = prompt("\n🔁 Enter a base58 private key to decode: ");
 
   try {
     const decoded = bs58.decode(base58Input);
